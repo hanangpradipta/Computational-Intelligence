@@ -1,11 +1,8 @@
-# CaturJawa_Web.py - Versi web menggunakan pygbag
 import sys, random, time
 import pygame
 import asyncio
 
-# ---------------------------------------
 # Konfigurasi & Warna
-# ---------------------------------------
 pygame.init()
 pygame.mixer.init(frequency=44100, size=-16, channels=1, buffer=512)
 
@@ -17,7 +14,6 @@ pygame.display.set_caption("Punto - 4 Pemain")
 FPS = 60
 CLOCK = pygame.time.Clock()
 
-# Warna - Dibuat lebih cerah dan berbeda
 WHITE = (255,255,255)
 BLACK = (0,0,0)
 GREY = (200,200,200)
@@ -30,9 +26,9 @@ YELLOW = (255, 255, 100)
 
 # Font
 pygame.font.init()
-FONT_BIG = pygame.font.SysFont("arial", 32, bold=True)  # Ukuran dikurangi
-FONT_MED = pygame.font.SysFont("arial", 24, bold=True)  # Ukuran dikurangi
-FONT_SMALL = pygame.font.SysFont("arial", 18)           # Ukuran dikurangi
+FONT_BIG = pygame.font.SysFont("arial", 32, bold=True)  
+FONT_MED = pygame.font.SysFont("arial", 24, bold=True) 
+FONT_SMALL = pygame.font.SysFont("arial", 18)       
 
 # Level Kesulitan Permainan
 EASY = 0
@@ -40,9 +36,6 @@ MEDIUM = 1
 HARD = 2
 DIFFICULTY_NAMES = ["Mudah", "Sedang", "Sulit"]
 
-# ---------------------------------------
-# Audio Sintetis (Kompatibel web)
-# ---------------------------------------
 CLICK_SND = None
 DING_SND = None
 
@@ -59,7 +52,6 @@ def _mk_tone(freq=880, ms=120, volume=0.3):
     except Exception:
         return None
 
-# Inisialisasi suara dengan fallback
 try:
     CLICK_SND = _mk_tone(900, 70, 0.35)
     DING_SND = _mk_tone(1200, 200, 0.4)
@@ -74,20 +66,16 @@ def s_play(snd):
         except: 
             pass
 
-# ---------------------------------------
-# Layout Papan (Disesuaikan untuk layar kecil)
-# ---------------------------------------
+# Layout Papan
 GRID_SIZE = 9
 CELL_PAD = 2
-BOARD_PIX = min(int(WIDTH*0.6), int(HEIGHT*0.75))  # Papan lebih kecil
+BOARD_PIX = min(int(WIDTH*0.6), int(HEIGHT*0.75))
 CELL_SIZE = BOARD_PIX // GRID_SIZE
 BOARD_PIX = CELL_SIZE * GRID_SIZE
 offset_x = (WIDTH - BOARD_PIX)//2
 offset_y = (HEIGHT - BOARD_PIX)//2 - 10
 
-# ---------------------------------------
 # Model Permainan (Diperbarui sesuai aturan)
-# ---------------------------------------
 PLAYER_COLORS = [YELLOW, BLUE, GREEN, RED]
 PLAYER_NAMES = ["P1 (ANDA)", "P2 (AI)", "P3 (AI)", "P4 (AI)"]
 HAND_LIMIT = 3
@@ -180,7 +168,7 @@ def place_card(board, player, val, r, c):
 DIRS = [(0,1), (1,0), (1,1), (1,-1)]
 
 def check_win(board, player):
-    """Periksa kondisi menang: 4 kartu berjejeran (horizontal/vertikal/diagonal) milik pemain yang sama"""
+   # Periksa kondisi menang: 4 kartu berjejeran (horizontal/vertikal/diagonal) milik pemain yang sama
     for r in range(GRID_SIZE):
         for c in range(GRID_SIZE):
             if not board[r][c]:
@@ -215,7 +203,7 @@ def check_win(board, player):
 
 
 def calculate_tiebreaker_score(board, player):
-    """Hitung skor tiebreaker untuk pemain"""
+    # Hitung skor tiebreaker untuk pemain
     max_line_sum = 0
     
     for r in range(GRID_SIZE):
@@ -267,11 +255,8 @@ def all_decks_empty(all_decks):
     """Periksa apakah semua deck kosong"""
     return all(len(deck) == 0 for deck in all_decks)
 
-# ---------------------------------------
-# Layar Pemilihan Kesulitan (Async)
-# ---------------------------------------
+# Layar Pemilihan Level (Async)
 async def difficulty_selection():
-    """Tampilkan layar pemilihan kesulitan dan return kesulitan yang dipilih"""
     selected = EASY
     confirmed = False
     
@@ -297,28 +282,26 @@ async def difficulty_selection():
             
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mx, my = event.pos
-                # Periksa klik tombol kesulitan
+                # Periksa klik tombol level
                 for i in range(3):
-                    button_y = HEIGHT//2 - 60 + i * 60  # Spasi dikurangi
-                    button_rect = pygame.Rect(WIDTH//2 - 150, button_y, 300, 50)  # Tombol lebih kecil
+                    button_y = HEIGHT//2 - 60 + i * 60 
+                    button_rect = pygame.Rect(WIDTH//2 - 150, button_y, 300, 50) 
                     if button_rect.collidepoint(mx, my):
                         selected = i
                         s_play(CLICK_SND)
                 
-                # Periksa tombol mulai
+                # cek tombol mulai
                 start_rect = pygame.Rect(WIDTH//2 - 75, HEIGHT//2 + 120, 150, 40)
                 if start_rect.collidepoint(mx, my):
                     confirmed = True
                     s_play(DING_SND)
 
-        # Gambar layar pemilihan kesulitan
         draw_gradient_background()
         
-        # Judul
         title = FONT_BIG.render("Pilih Kesulitan", True, WHITE)
         SCREEN.blit(title, (WIDTH//2 - title.get_width()//2, HEIGHT//2 - 150))
         
-        # Tombol kesulitan
+        # Tombol Level
         for i in range(3):
             button_y = HEIGHT//2 - 60 + i * 60
             button_rect = pygame.Rect(WIDTH//2 - 150, button_y, 300, 50)
@@ -331,7 +314,7 @@ async def difficulty_selection():
                 pygame.draw.rect(SCREEN, (50, 60, 80), button_rect, border_radius=8)
                 pygame.draw.rect(SCREEN, GREY, button_rect, 1, border_radius=8)
             
-            # Nama kesulitan
+            # Nama level
             name = FONT_MED.render(f"{i+1}. {DIFFICULTY_NAMES[i]}", True, WHITE)
             SCREEN.blit(name, (button_rect.x + 10, button_rect.y + 8))
             
@@ -357,17 +340,14 @@ async def difficulty_selection():
         SCREEN.blit(inst1, (WIDTH//2 - inst1.get_width()//2, HEIGHT//2 + 180))
         
         pygame.display.flip()
-        await asyncio.sleep(0)  # Serah kontrol ke browser
+        await asyncio.sleep(0) 
         CLOCK.tick(FPS)
     
     return selected
 
-# ---------------------------------------
-# Fungsi Gambar (Disesuaikan untuk web)
-# ---------------------------------------
-def draw_gradient_background():
-    """Gambar latar belakang gradien gelap elegan"""
-    for y in range(0, HEIGHT, 4):  # Gambar setiap baris ke-4 untuk performa
+# background
+    def draw_gradient_background():
+    for y in range(0, HEIGHT, 4): 
         t = y / HEIGHT
         r = int(12 + 30*t)
         g = int(15 + 35*t)
@@ -376,8 +356,7 @@ def draw_gradient_background():
         
 
 def draw_board(board, active_player, selected_value=None, first_move_done=True):
-    """Gambar papan permainan"""
-    # Latar belakang papan
+    # Background belakang papan
     board_rect = pygame.Rect(offset_x-8, offset_y-8, BOARD_PIX+16, BOARD_PIX+16)
     pygame.draw.rect(SCREEN, (40, 45, 60), board_rect, border_radius=8)
     
@@ -431,8 +410,7 @@ def draw_board(board, active_player, selected_value=None, first_move_done=True):
     pygame.draw.rect(SCREEN, color, border_rect, 3, border_radius=6)
 
 def draw_hands(hands, decks, active_player, status_text, selected_value, difficulty):
-    """Gambar tangan pemain dan status (disesuaikan untuk web)"""
-    panel_h = 180  # Panel lebih kecil
+    panel_h = 180
     panel_rect = pygame.Rect(0, HEIGHT - panel_h, WIDTH, panel_h)
     
     # Latar belakang
@@ -458,7 +436,6 @@ def draw_hands(hands, decks, active_player, status_text, selected_value, difficu
         status2 = FONT_SMALL.render(status_text, True, WHITE)
         SCREEN.blit(status2, (20, HEIGHT - panel_h + 40))
 
-    # Tangan manusia
     human_hand = hands[0]
     label = FONT_MED.render(f"Kartu Anda ({get_hand_size(human_hand)}/{HAND_LIMIT}):", True, WHITE)
     SCREEN.blit(label, (20, HEIGHT - panel_h + 70))
@@ -495,11 +472,9 @@ def draw_hands(hands, decks, active_player, status_text, selected_value, difficu
         SCREEN.blit(text, (WIDTH - 250, HEIGHT - panel_h + 20 + (pid-1)*25))
 
 def draw_key_hints():
-    """Gambar pintasan keyboard dan tombol ulang"""
     hints = FONT_SMALL.render("[R] Ulang Permainan", True, GREY)
     SCREEN.blit(hints, (WIDTH - hints.get_width() - 10, 10))
     
-    # Tombol ulang untuk mobile
     restart_button = pygame.Rect(WIDTH - 200, 40, 190, 35)
     pygame.draw.rect(SCREEN, (200, 80, 80), restart_button, border_radius=8)
     pygame.draw.rect(SCREEN, WHITE, restart_button, 2, border_radius=8)
@@ -508,7 +483,6 @@ def draw_key_hints():
                               restart_button.centery - restart_text.get_height()//2))
 
 def draw_winner_popup(winner_name, scores):
-    """Gambar popup akhir permainan"""
     overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
     overlay.fill((0,0,0,160))
     SCREEN.blit(overlay, (0,0))
@@ -537,7 +511,6 @@ def draw_winner_popup(winner_name, scores):
     SCREEN.blit(hint, (box.centerx - hint.get_width()//2, box.bottom - 40))
 
 def check_restart_button_click(mx, my):
-    """Periksa apakah tombol restart diklik di popup"""
     box = pygame.Rect(0, 0, 500, 300)
     box.center = (WIDTH//2, HEIGHT//2)
     restart_btn = pygame.Rect(box.centerx - 100, box.bottom - 80, 200, 40)
@@ -573,9 +546,7 @@ def hand_card_from_mouse(mx, my, hand):
             card_idx += 1
     return None
 
-# ---------------------------------------
-# Logika AI (Disederhanakan untuk performa web)
-# ---------------------------------------
+# Logika AI
 def potential_cells(board, first_move_done):
     """Dapatkan semua sel valid tempat kartu dapat ditempatkan"""
     if not first_move_done:
@@ -826,12 +797,10 @@ def ai_choose_move(board, hands, player, first_move_done, difficulty):
     
     return None
 
-# ---------------------------------------
 # Animasi Roulette (Async)
-# ---------------------------------------
-async def roulette_animation():
+    async def roulette_animation():
     """Animasi roulette async"""
-    t_end = time.time() + 2.0  # Lebih pendek untuk web
+    t_end = time.time() + 2.0  
     idx = 0
     names = ["Pemain 1...", "Pemain 2...", "Pemain 3...", "Pemain 4..."]
     last_tick = 0
@@ -867,10 +836,8 @@ async def roulette_animation():
     s_play(DING_SND)
     return [0, 1, 2, 3]
 
-# ---------------------------------------
 # Status Permainan (Diperbarui)
-# ---------------------------------------
-class GameState:
+    class GameState:
     def __init__(self, difficulty):
         self.difficulty = difficulty
         self.reset_all()
@@ -936,10 +903,8 @@ class GameState:
     def ai_can_act(self):
         return self.active_player != 0 and not self.game_over
 
-# ---------------------------------------
 # Aksi Permainan (Logika sama, disederhanakan)
-# ---------------------------------------
-def human_try_place(gs, cell_rc):
+    def human_try_place(gs, cell_rc):
     """s2, s3, s4: Coba tempatkan kartu manusia"""
     if gs.game_over or not gs.human_can_act():
         return
@@ -1179,12 +1144,9 @@ def draw_everything(gs):
             winner_name = PLAYER_NAMES[gs.winner]
         draw_winner_popup(winner_name, gs.scores)
 
-# ---------------------------------------
-# Loop Utama (Async untuk web)
-# ---------------------------------------
-async def main():
+    async def main():
     """Loop permainan async utama"""
-    # Tampilkan pemilihan kesulitan
+    # Tampilkan pemilihan level
     difficulty = await difficulty_selection()
     if difficulty is None:
         return
